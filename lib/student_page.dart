@@ -1,44 +1,47 @@
-import 'package:student/database_helper.dart'; // Import the database helper class
 import 'package:flutter/material.dart';
+import 'package:student/database_helper.dart'; // Import your DatabaseHelper
 
-class StudentPage extends StatelessWidget {
+class StudentPage extends StatefulWidget {
+  @override
+  _StudentPageState createState() => _StudentPageState();
+}
+
+class _StudentPageState extends State<StudentPage> {
+  late Future<List<Map<String, dynamic>>> _students;
+
+  @override
+  void initState() {
+    super.initState();
+    _students = DatabaseHelper().getAllStudents(); // Fetch all students from the database
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Student List'),
+        title: Text('Students'),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: DatabaseHelper().getAllStudents(),
+        future: _students,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // While data is loading
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            // If an error occurs
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            // If data is successfully fetched
             List<Map<String, dynamic>> students = snapshot.data ?? [];
             return ListView.builder(
               itemCount: students.length,
               itemBuilder: (context, index) {
+                Map<String, dynamic> student = students[index];
                 return ListTile(
-                  title: Text(
-                      '${students[index]['first_name']} ${students[index]['last_name']}'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('ID: ${students[index]['student_id']}'),
-                      Text('Fees Paid: ${students[index]['fees_paid'] == 1 ? 'Yes' : 'No'}'),
-                    ],
-                  ),
-                  // You can add more information here if needed
+                  title: Text('${student['first_name']} ${student['last_name']}'),
+                  subtitle: Text('Student ID: ${student['student_id']}'),
+                  trailing: Icon(Icons.person), // You can replace this with any icon you like
                 );
               },
             );
-
-        }
+          }
         },
       ),
     );
